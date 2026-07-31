@@ -1,0 +1,39 @@
+[
+  {
+    "examCode": "DSE",
+    "skill": "speaking",
+    "title": "DSE Paper 4 — Individual Response",
+    "source": "sample",
+    "timeLimit": 240,
+    "speakingCard": {
+      "part": "dse_individual",
+      "prompt": "Talk for one minute about the following: 'The advantages and disadvantages of studying abroad after secondary school.'",
+      "followUps": [
+        "What kind of student benefits most from studying abroad?",
+        "How can students prepare for living in another country?",
+        "Would you personally choose to study abroad? Why or why not?"
+      ],
+      "prepTime": 60,
+      "speakTime": 60,
+      "rubricKey": "dse_speaking"
+    }
+  },
+  {
+    "examCode": "IELTS_ACADEMIC",
+    "skill": "speaking",
+    "title": "IELTS Speaking — Part 2 Cue Card",
+    "source": "mock",
+    "timeLimit": 180,
+    "speakingCard": {
+      "part": "part2",
+      "prompt": "Describe a skill you would like to learn. You should say: what the skill is, why you want to learn it, how you would learn it, and explain how this skill would help you.",
+      "followUps": [
+        "Do you think some skills are harder to learn as an adult?",
+        "Is it better to learn a skill alone or with a teacher?"
+      ],
+      "prepTime": 60,
+      "speakTime": 120,
+      "rubricKey": "ielts_speaking"
+    }
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "examCode": "IELTS_GENERAL",
+  "skill": "reading",
+  "title": "IELTS General Training Reading — Section 1 (Sample)",
+  "source": "mock",
+  "timeLimit": 1200,
+  "passages": [
+    {
+      "title": "Community Library — Membership Notice",
+      "order": 0,
+      "body": "Welcome to the Riverside Community Library. Membership is free for all local residents aged 12 and above. To join, bring proof of address to the front desk. Members may borrow up to eight items at a time for a period of three weeks. Items may be renewed twice, provided they have not been reserved by another member.\n\nThe library is open Monday to Friday from 9 a.m. to 8 p.m., and on weekends from 10 a.m. to 5 p.m. A late return fee of 50 cents per item per day applies. Lost or damaged items must be paid for at replacement cost.\n\nThe quiet study room on the second floor may be booked online up to seven days in advance. Group study rooms are available on a first-come, first-served basis."
+    }
+  ],
+  "questions": [
+    {
+      "type": "short_answer",
+      "order": 0,
+      "prompt": "How many items may a member borrow at one time?",
+      "answerKey": ["eight", "8"],
+      "explanation": "'borrow up to eight items at a time'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "true_false_not_given",
+      "order": 1,
+      "prompt": "Items can be renewed an unlimited number of times.",
+      "answerKey": "False",
+      "explanation": "'Items may be renewed twice'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "true_false_not_given",
+      "order": 2,
+      "prompt": "The quiet study room can be booked online in advance.",
+      "answerKey": "True",
+      "explanation": "'may be booked online up to seven days in advance'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "short_answer",
+      "order": 3,
+      "prompt": "What is the late return fee per item per day?",
+      "answerKey": ["50 cents", "50c", "fifty cents"],
+      "explanation": "'A late return fee of 50 cents per item per day'.",
+      "points": 1,
+      "passageRef": 0
+    }
+  ]
+}

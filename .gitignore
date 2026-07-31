@@ -1,0 +1,45 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+
+# env
+.env
+.env*.local
+
+# db
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# testing
+coverage
+
+# misc
+*.log
+npm-debug.log*
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# local Python envs (TTS / Whisper)
+.venv-tts/
+.venv/
+venv/
+
+# generated TTS cache for coach avatar
+public/tts
+
+# Cursor / local debug
+.cursor/
+
+
+# local deploy helper (contains secrets)
+.vps.env
+
+
+# Large WAV duplicates (MP3 is used in production)
+public/audio/*.wav
+

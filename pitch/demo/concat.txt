@@ -1,0 +1,6 @@
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-00.mp4'
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-01.mp4'
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-02.mp4'
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-03.mp4'
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-04.mp4'
+file '/home/ansgari2026/Desktop/english learning dse app/pitch/demo/clip-05.mp4'

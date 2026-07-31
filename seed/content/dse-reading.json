@@ -1,0 +1,74 @@
+{
+  "examCode": "DSE",
+  "skill": "reading",
+  "title": "DSE Paper 1 — Reading (Sample)",
+  "year": 2023,
+  "source": "sample",
+  "timeLimit": 5400,
+  "passages": [
+    {
+      "title": "The Rise of Urban Farming",
+      "order": 0,
+      "body": "Across Hong Kong's dense skyline, an unexpected green movement is taking root. Rooftop farms, once a novelty, now supply fresh vegetables to nearby restaurants and community groups. Advocates argue that urban farming shortens supply chains, reduces carbon emissions from transport, and reconnects city dwellers with the origins of their food.\n\nCritics, however, point out that rooftop farming remains costly. Installation of soil beds, irrigation, and safety railings can be expensive, and yields are modest compared with rural farms. Despite these concerns, participation continues to grow, driven less by profit than by education and community spirit. Schools have begun using rooftop plots to teach biology and sustainability, and elderly residents report that tending plants improves their wellbeing.\n\nWhether urban farming can scale to feed a significant portion of the city remains uncertain. What is clear is that it has changed how many residents think about food, space, and the environment."
+    }
+  ],
+  "questions": [
+    {
+      "type": "mcq",
+      "order": 0,
+      "prompt": "According to the passage, one main benefit of urban farming is that it:",
+      "options": [
+        { "id": "A", "label": "eliminates the need for rural farms" },
+        { "id": "B", "label": "shortens supply chains and cuts transport emissions" },
+        { "id": "C", "label": "guarantees higher profits than rural farming" },
+        { "id": "D", "label": "requires no initial investment" }
+      ],
+      "answerKey": "B",
+      "explanation": "The passage states urban farming 'shortens supply chains' and 'reduces carbon emissions from transport'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "true_false_not_given",
+      "order": 1,
+      "prompt": "Rooftop farming produces higher yields than rural farms.",
+      "answerKey": "False",
+      "explanation": "The passage says 'yields are modest compared with rural farms'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "true_false_not_given",
+      "order": 2,
+      "prompt": "The Hong Kong government funds all rooftop farms.",
+      "answerKey": "Not Given",
+      "explanation": "The passage does not mention government funding.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "short_answer",
+      "order": 3,
+      "prompt": "Name ONE group, besides restaurants, that receives vegetables from rooftop farms.",
+      "answerKey": ["community groups", "community group"],
+      "explanation": "The passage mentions 'nearby restaurants and community groups'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "mcq",
+      "order": 4,
+      "prompt": "What drives most participation in urban farming, according to the writer?",
+      "options": [
+        { "id": "A", "label": "Profit" },
+        { "id": "B", "label": "Government pressure" },
+        { "id": "C", "label": "Education and community spirit" },
+        { "id": "D", "label": "Tourism" }
+      ],
+      "answerKey": "C",
+      "explanation": "'driven less by profit than by education and community spirit'.",
+      "points": 1,
+      "passageRef": 0
+    }
+  ]
+}

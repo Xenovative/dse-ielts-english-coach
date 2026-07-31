@@ -1,0 +1,87 @@
+[
+  {
+    "examCode": "IELTS_ACADEMIC",
+    "skill": "listening",
+    "title": "IELTS Listening — Section 1 (Sample)",
+    "source": "mock",
+    "timeLimit": 600,
+    "audioAssets": [
+      {
+        "url": "/audio/ielts-listening-1.mp3",
+        "order": 0,
+        "durationMs": 120000,
+        "transcript": "Good morning, City Sports Centre, how can I help you? — Hi, I'd like to book a badminton court for Saturday. — Certainly. Our courts are $12 per hour, and members pay $8. Membership costs $30 per year. The centre opens at 7 a.m. and closes at 10 p.m."
+      }
+    ],
+    "questions": [
+      {
+        "type": "short_answer",
+        "order": 0,
+        "prompt": "How much does a badminton court cost per hour for non-members?",
+        "answerKey": ["$12", "12 dollars", "12"],
+        "explanation": "The transcript states courts are $12 per hour.",
+        "points": 1,
+        "audioRef": 0
+      },
+      {
+        "type": "short_answer",
+        "order": 1,
+        "prompt": "How much is annual membership?",
+        "answerKey": ["$30", "30 dollars", "30"],
+        "explanation": "'Membership costs $30 per year'.",
+        "points": 1,
+        "audioRef": 0
+      },
+      {
+        "type": "mcq",
+        "order": 2,
+        "prompt": "What time does the centre close?",
+        "options": [
+          { "id": "A", "label": "7 p.m." },
+          { "id": "B", "label": "9 p.m." },
+          { "id": "C", "label": "10 p.m." },
+          { "id": "D", "label": "midnight" }
+        ],
+        "answerKey": "C",
+        "explanation": "'closes at 10 p.m.'",
+        "points": 1,
+        "audioRef": 0
+      }
+    ]
+  },
+  {
+    "examCode": "DSE",
+    "skill": "listening",
+    "title": "DSE Paper 3 — Listening (Sample)",
+    "source": "sample",
+    "timeLimit": 600,
+    "audioAssets": [
+      {
+        "url": "/audio/dse-listening-1.mp3",
+        "order": 0,
+        "durationMs": 90000,
+        "transcript": "Attention students. The annual science fair will be held in the school hall on the 15th of March. Projects must be submitted to Room 204 by the 10th of March. The top three entries will receive book vouchers."
+      }
+    ],
+    "questions": [
+      {
+        "type": "short_answer",
+        "order": 0,
+        "prompt": "Where will the science fair be held?",
+        "answerKey": ["school hall", "the school hall", "hall"],
+        "explanation": "'held in the school hall'.",
+        "points": 1,
+        "audioRef": 0
+      },
+      {
+        "type": "short_answer",
+        "order": 1,
+        "prompt": "By what date must projects be submitted?",
+        "answerKey": ["10th of March", "10 March", "March 10", "the 10th of March"],
+        "explanation": "'submitted ... by the 10th of March'.",
+        "points": 1,
+        "audioRef": 0
+      }
+    ]
+  }
+]

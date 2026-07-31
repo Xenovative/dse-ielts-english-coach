@@ -1,0 +1,44 @@
+[
+  {
+    "examCode": "DSE",
+    "skill": "writing",
+    "title": "DSE Paper 2 — Writing (Part B)",
+    "source": "sample",
+    "timeLimit": 5400,
+    "writingPrompt": {
+      "taskType": "dse_long",
+      "prompt": "Your school is considering banning mobile phones during school hours. Write a letter to the editor of your school newspaper expressing your view. Give reasons and examples to support your opinion. (Write about 400 words.)",
+      "minWords": 400,
+      "timeLimit": 5400,
+      "rubricKey": "dse_writing"
+    }
+  },
+  {
+    "examCode": "IELTS_ACADEMIC",
+    "skill": "writing",
+    "title": "IELTS Academic Writing — Task 2",
+    "source": "mock",
+    "timeLimit": 2400,
+    "writingPrompt": {
+      "taskType": "task2",
+      "prompt": "Some people believe that universities should focus on providing academic skills, while others think they should also prepare students for the workplace. Discuss both views and give your own opinion. (Write at least 250 words.)",
+      "minWords": 250,
+      "timeLimit": 2400,
+      "rubricKey": "ielts_writing_academic"
+    }
+  },
+  {
+    "examCode": "IELTS_GENERAL",
+    "skill": "writing",
+    "title": "IELTS General Training Writing — Task 1",
+    "source": "mock",
+    "timeLimit": 1200,
+    "writingPrompt": {
+      "taskType": "task1",
+      "prompt": "You recently stayed at a hotel and were unhappy with the service. Write a letter to the hotel manager. In your letter: explain why you were staying at the hotel, describe the problems, and say what you would like the manager to do. (Write at least 150 words.)",
+      "minWords": 150,
+      "timeLimit": 1200,
+      "rubricKey": "ielts_writing_general"
+    }
+  }
+]

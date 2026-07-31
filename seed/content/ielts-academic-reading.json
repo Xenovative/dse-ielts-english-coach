@@ -1,0 +1,71 @@
+{
+  "examCode": "IELTS_ACADEMIC",
+  "skill": "reading",
+  "title": "IELTS Academic Reading — Passage 1 (Sample)",
+  "source": "mock",
+  "timeLimit": 1200,
+  "passages": [
+    {
+      "title": "The Science of Sleep",
+      "order": 0,
+      "body": "Sleep is far from a passive state. During the night, the brain cycles through distinct stages, each serving a different function. In deep slow-wave sleep, the body repairs tissue and consolidates factual memories. In rapid eye movement (REM) sleep, the brain processes emotions and strengthens procedural skills, such as learning to play an instrument.\n\nResearchers have found that even a single night of poor sleep can impair attention, decision-making, and mood. Chronic sleep deprivation is associated with more serious risks, including weakened immunity and metabolic disorders. Yet modern lifestyles, with their artificial light and constant connectivity, increasingly disrupt natural sleep rhythms.\n\nInterventions need not be complex. Studies suggest that maintaining a consistent sleep schedule, limiting screen exposure before bed, and keeping bedrooms cool and dark can markedly improve sleep quality. Crucially, sleep should be treated not as a luxury but as a biological necessity."
+    }
+  ],
+  "questions": [
+    {
+      "type": "true_false_not_given",
+      "order": 0,
+      "prompt": "Deep slow-wave sleep helps the body repair tissue.",
+      "answerKey": "True",
+      "explanation": "The passage says 'In deep slow-wave sleep, the body repairs tissue'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "true_false_not_given",
+      "order": 1,
+      "prompt": "REM sleep is more important than slow-wave sleep.",
+      "answerKey": "Not Given",
+      "explanation": "The passage describes both but never ranks their importance.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "summary_completion",
+      "order": 2,
+      "prompt": "Complete the summary: REM sleep helps the brain process emotions and strengthen ______ skills.",
+      "answerKey": ["procedural"],
+      "explanation": "'strengthens procedural skills, such as learning to play an instrument'.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "mcq",
+      "order": 3,
+      "prompt": "Which is NOT mentioned as a way to improve sleep quality?",
+      "options": [
+        { "id": "A", "label": "Consistent sleep schedule" },
+        { "id": "B", "label": "Limiting screens before bed" },
+        { "id": "C", "label": "Taking sleeping pills" },
+        { "id": "D", "label": "Keeping the bedroom cool and dark" }
+      ],
+      "answerKey": "C",
+      "explanation": "Sleeping pills are not mentioned; the others are listed directly.",
+      "points": 1,
+      "passageRef": 0
+    },
+    {
+      "type": "matching",
+      "order": 4,
+      "prompt": "Match each sleep stage to its function.",
+      "options": [
+        { "id": "Slow-wave", "label": "e.g. repairs tissue" },
+        { "id": "REM", "label": "e.g. processes emotions" }
+      ],
+      "answerKey": { "Slow-wave": "repairs tissue", "REM": "processes emotions" },
+      "explanation": "Slow-wave repairs tissue; REM processes emotions.",
+      "points": 2,
+      "passageRef": 0
+    }
+  ]
+}

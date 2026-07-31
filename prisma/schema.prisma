@@ -1,0 +1,277 @@
+// DSE + IELTS English Coach — Prisma schema
+// Dev uses SQLite for zero-setup. To move to Postgres: change provider to
+// "postgresql" and DATABASE_URL, then run `prisma migrate dev`.
+//
+// SQLite notes:
+//  - Prisma enums are NOT supported on SQLite, so "enum-like" fields are String
+//    with the allowed values documented and validated in lib/validators.
+//  - Structured payloads (options, answer keys, rubric sub-scores) are stored as
+//    JSON strings ("Json as text") and (de)serialized in lib/utils/json.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity & preferences
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  passwordHash String?
+  name         String?
+  // "student" | "admin"
+  role         String   @default("student")
+  // Guest accounts are ephemeral, created for guest mode.
+  isGuest      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  languagePreference LanguagePreference?
+  sessions           PracticeSession[]
+  submissions        Submission[]
+  skillScores        SkillScore[]
+  progressMetrics    ProgressMetric[]
+  feedback           Feedback[]
+}
+
+model LanguagePreference {
+  id       String @id @default(cuid())
+  userId   String @unique
+  // "en" | "zh-Hant" | "zh-Hans"
+  locale   String @default("en")
+  // "light" | "dark" | "system"
+  theme    String @default("system")
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Content catalogue
+// ---------------------------------------------------------------------------
+
+model ExamMode {
+  id          String @id @default(cuid())
+  // "DSE" | "IELTS_ACADEMIC" | "IELTS_GENERAL"
+  code        String @unique
+  name        String
+  description String?
+  papers      Paper[]
+}
+
+model Paper {
+  id         String   @id @default(cuid())
+  examModeId String
+  examMode   ExamMode @relation(fields: [examModeId], references: [id], onDelete: Cascade)
+  // "reading" | "writing" | "listening" | "speaking"
+  skill      String
+  // e.g. "Paper 1", "Listening Section 1"
+  title      String
+  // Exam year / mock label; null for custom content
+  year       Int?
+  // "official" | "mock" | "custom"
+  source     String   @default("official")
+  // Suggested time limit in seconds
+  timeLimit  Int?
+  createdAt  DateTime @default(now())
+
+  passages     Passage[]
+  audioAssets  AudioAsset[]
+  questions    Question[]
+  writingPrompts WritingPrompt[]
+  speakingCards  SpeakingCard[]
+  sessions     PracticeSession[]
+
+  @@index([examModeId, skill])
+}
+
+model Passage {
+  id        String   @id @default(cuid())
+  paperId   String
+  paper     Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  title     String?
+  body      String
+  order     Int      @default(0)
+  questions Question[]
+}
+
+model AudioAsset {
+  id         String  @id @default(cuid())
+  paperId    String
+  paper      Paper   @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  url        String
+  transcript String?
+  durationMs Int?
+  order      Int     @default(0)
+  questions  Question[]
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  paperId      String
+  paper        Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  passageId    String?
+  passage      Passage? @relation(fields: [passageId], references: [id], onDelete: SetNull)
+  audioAssetId String?
+  audioAsset   AudioAsset? @relation(fields: [audioAssetId], references: [id], onDelete: SetNull)
+  // "mcq" | "true_false_not_given" | "matching" | "short_answer" | "summary_completion"
+  type         String
+  order        Int      @default(0)
+  prompt       String
+  // JSON string: array of options / matching pairs (nullable for free text)
+  options      String?
+  // JSON string: canonical answer(s)
+  answerKey    String
+  // Evidence highlight in passage: JSON { start, end } offsets (optional)
+  evidence     String?
+  explanation  String?
+  points       Int      @default(1)
+
+  answers Answer[]
+
+  @@index([paperId, order])
+}
+
+model WritingPrompt {
+  id          String @id @default(cuid())
+  paperId     String
+  paper       Paper  @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  // "task1" | "task2" | "dse_short" | "dse_long"
+  taskType    String
+  prompt      String
+  minWords    Int    @default(150)
+  timeLimit   Int?
+  rubricKey   String // references a rubric in lib/rubrics
+}
+
+model SpeakingCard {
+  id         String  @id @default(cuid())
+  paperId    String
+  paper      Paper   @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  // "part1" | "part2" | "part3" | "dse_group" | "dse_individual"
+  part       String
+  prompt     String
+  // JSON string: follow-up questions
+  followUps  String?
+  prepTime   Int?
+  speakTime  Int?
+  rubricKey  String
+}
+
+// ---------------------------------------------------------------------------
+// Attempts & scoring
+// ---------------------------------------------------------------------------
+
+model PracticeSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paperId   String
+  paper     Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  // "reading" | "writing" | "listening" | "speaking"
+  skill     String
+  // "in_progress" | "submitted" | "scored"
+  status    String   @default("in_progress")
+  startedAt DateTime @default(now())
+  submittedAt DateTime?
+  // seconds actually spent
+  timeSpent Int?
+
+  submissions Submission[]
+  skillScores SkillScore[]
+  feedback    Feedback[]
+
+  @@index([userId, startedAt])
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // "reading" | "writing" | "listening" | "speaking"
+  skill     String
+  // For writing: full text. For speaking: transcript. For reading/listening: null.
+  responseText String?
+  // Uploaded audio path for speaking (nullable)
+  audioUrl  String?
+  createdAt DateTime @default(now())
+
+  answers   Answer[]
+  feedback  Feedback?
+  skillScore SkillScore?
+
+  @@index([userId, createdAt])
+}
+
+model Answer {
+  id           String   @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  // JSON string: the learner's raw response
+  value        String
+  isCorrect    Boolean?
+  pointsAwarded Int      @default(0)
+
+  @@unique([submissionId, questionId])
+}
+
+model SkillScore {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId    String
+  session      PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  submissionId String?  @unique
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  skill        String
+  // "DSE" | "IELTS_ACADEMIC" | "IELTS_GENERAL"
+  examCode     String
+  // Raw percentage 0-100
+  rawPercent   Float
+  // Normalized exam score: DSE level (1-5**) or IELTS band (0-9)
+  scaledScore  String
+  // JSON string: sub-scores per criterion
+  subScores    String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, skill, createdAt])
+}
+
+model Feedback {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId    String
+  session      PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  submissionId String   @unique
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  // Which engine produced this: "mock" | "openai" | "ollama"
+  provider     String
+  // Full structured feedback JSON (overallScore, subScores, strengths, mistakes, corrections, nextSteps)
+  payload      String
+  createdAt    DateTime @default(now())
+}
+
+model ProgressMetric {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill     String
+  examCode  String
+  // rolling aggregate value (e.g. avg percent)
+  value     Float
+  // "attempt" | "weekly" | "monthly"
+  bucket    String   @default("attempt")
+  recordedAt DateTime @default(now())
+
+  @@index([userId, skill, recordedAt])
+}
