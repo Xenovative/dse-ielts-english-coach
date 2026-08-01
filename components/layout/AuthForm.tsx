@@ -45,6 +45,34 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const setCookie = res.headers.get("set-cookie");
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/ccf26217-348c-4a08-bd0f-2912974b0d2f", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "3891af",
+        },
+        body: JSON.stringify({
+          sessionId: "3891af",
+          runId: "pre-fix",
+          hypothesisId: "A",
+          location: "components/layout/AuthForm.tsx:submit",
+          message: "Auth form response",
+          data: {
+            mode,
+            status: res.status,
+            ok: res.ok,
+            pageProtocol: typeof window !== "undefined" ? window.location.protocol : null,
+            pageHost: typeof window !== "undefined" ? window.location.host : null,
+            setCookiePresent: Boolean(setCookie),
+            setCookieHasSecure: setCookie ? /;\s*secure/i.test(setCookie) : null,
+            visibleCookieNames: typeof document !== "undefined" ? document.cookie : null,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         throw new Error(data?.error?.message || t("common.error"));
@@ -52,6 +80,24 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/ccf26217-348c-4a08-bd0f-2912974b0d2f", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "3891af",
+        },
+        body: JSON.stringify({
+          sessionId: "3891af",
+          runId: "pre-fix",
+          hypothesisId: "E",
+          location: "components/layout/AuthForm.tsx:submit",
+          message: "Auth form error",
+          data: { mode, error: (err as Error).message },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       setError((err as Error).message);
     } finally {
       setLoading(null);
@@ -63,6 +109,31 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     setLoading("guest");
     try {
       const res = await fetch("/api/auth/guest", { method: "POST" });
+      const setCookie = res.headers.get("set-cookie");
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/ccf26217-348c-4a08-bd0f-2912974b0d2f", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "3891af",
+        },
+        body: JSON.stringify({
+          sessionId: "3891af",
+          runId: "pre-fix",
+          hypothesisId: "A",
+          location: "components/layout/AuthForm.tsx:guest",
+          message: "Guest auth response",
+          data: {
+            status: res.status,
+            ok: res.ok,
+            pageProtocol: typeof window !== "undefined" ? window.location.protocol : null,
+            setCookiePresent: Boolean(setCookie),
+            setCookieHasSecure: setCookie ? /;\s*secure/i.test(setCookie) : null,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       if (!res.ok) throw new Error(t("common.error"));
       router.push("/dashboard");
       router.refresh();
