@@ -45,8 +45,35 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const data = await res.json().catch(() => null);
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/ccf26217-348c-4a08-bd0f-2912974b0d2f", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "3891af",
+        },
+        body: JSON.stringify({
+          sessionId: "3891af",
+          runId: "invalid-login",
+          hypothesisId: "F-H",
+          location: "AuthForm.tsx:submit",
+          message: "Auth attempt result",
+          data: {
+            mode,
+            status: res.status,
+            ok: res.ok,
+            errorCode: data?.error?.code ?? null,
+            errorMessage: data?.error?.message ?? null,
+            emailLen: payload.email.length,
+            passwordLen: payload.password.length,
+            emailHasUpper: /[A-Z]/.test(payload.email),
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         throw new Error(data?.error?.message || t("common.error"));
       }
       router.push("/dashboard");
