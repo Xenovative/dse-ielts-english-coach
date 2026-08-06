@@ -29,8 +29,8 @@ export type TalkingHeadAvatarHandle = {
 
 type Props = {
   size?: "md" | "lg" | "hero";
-  /** Circular white frame like speaking-test reference UI. */
-  frame?: "rounded" | "circle";
+  /** Frame shape around the 3D coach. */
+  frame?: "rounded" | "circle" | "square";
   name?: string;
   subtitle?: string;
   /** Hide name/subtitle chrome under the canvas. */
@@ -178,9 +178,6 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
       let cancelled = false;
       const node = containerRef.current;
       if (!node) return;
-      // #region agent log
-      fetch('http://127.0.0.1:7297/ingest/461a83a5-6229-4271-a7d9-4e3e2cf16e5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'884e6c'},body:JSON.stringify({sessionId:'884e6c',runId:'post-fix',hypothesisId:'A',location:'TalkingHeadAvatar.tsx:initEffect',message:'avatar init effect RUN (will load GLB)',data:{frame},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       (async () => {
         try {
@@ -194,29 +191,29 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
 
           if (cancelled || !containerRef.current) return;
 
-          const isCircle = frame === "circle";
+          const tightCrop = frame === "circle" || frame === "square";
           const head = new TalkingHead(containerRef.current, {
             ttsEndpoint: "",
             lipsyncModules: [],
             lipsyncLang: "en",
-            // Head crop fills the circle; upper left empty space away.
-            cameraView: isCircle ? "head" : "upper",
-            cameraRotateEnable: !isCircle,
+            // Head crop fills circle/square; wider upper view for rounded cards.
+            cameraView: tightCrop ? "head" : "upper",
+            cameraRotateEnable: !tightCrop,
             cameraPanEnable: false,
             cameraZoomEnable: false,
             // Shift framing: avatar was low-right → nudge left + slightly up + closer.
-            cameraX: isCircle ? -0.18 : 0,
-            cameraY: isCircle ? 0.12 : 0,
-            cameraDistance: isCircle ? -0.45 : 0,
+            cameraX: tightCrop ? -0.18 : 0,
+            cameraY: tightCrop ? 0.12 : 0,
+            cameraDistance: tightCrop ? -0.45 : 0,
             cameraRotateX: 0,
             cameraRotateY: 0,
             avatarMood: "neutral",
             // Strong eye contact so the coach looks at the student.
             avatarIgnoreCamera: false,
-            avatarIdleEyeContact: isCircle ? 0.95 : 0.35,
+            avatarIdleEyeContact: tightCrop ? 0.95 : 0.35,
             avatarSpeakingEyeContact: 1,
-            avatarIdleHeadMove: isCircle ? 0.12 : 0.35,
-            avatarSpeakingHeadMove: isCircle ? 0.18 : 0.4,
+            avatarIdleHeadMove: tightCrop ? 0.12 : 0.35,
+            avatarSpeakingHeadMove: tightCrop ? 0.18 : 0.4,
             modelFPS: 30,
             lightAmbientIntensity: 2.4,
             lightDirectIntensity: 32,
@@ -231,10 +228,10 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
             avatarMood: "neutral",
             lipsyncLang: "en",
             avatarIgnoreCamera: false,
-            avatarIdleEyeContact: isCircle ? 0.95 : 0.35,
+            avatarIdleEyeContact: tightCrop ? 0.95 : 0.35,
             avatarSpeakingEyeContact: 1,
-            avatarIdleHeadMove: isCircle ? 0.12 : 0.35,
-            avatarSpeakingHeadMove: isCircle ? 0.18 : 0.4,
+            avatarIdleHeadMove: tightCrop ? 0.12 : 0.35,
+            avatarSpeakingHeadMove: tightCrop ? 0.18 : 0.4,
           });
 
           if (cancelled) {
@@ -243,7 +240,7 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
           }
 
           // Re-apply framing after load (height is known) and lock eyes on camera.
-          if (isCircle && head.setView) {
+          if (tightCrop && head.setView) {
             head.setView("head", {
               cameraX: -0.18,
               cameraY: 0.12,
@@ -284,9 +281,6 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
       })();
 
       return () => {
-        // #region agent log
-        fetch('http://127.0.0.1:7297/ingest/461a83a5-6229-4271-a7d9-4e3e2cf16e5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'884e6c'},body:JSON.stringify({sessionId:'884e6c',runId:'post-fix',hypothesisId:'A',location:'TalkingHeadAvatar.tsx:initEffect:cleanup',message:'avatar init effect CLEANUP (dispose GLB)',data:{frame},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         cancelled = true;
         stopPoll();
         readyRef.current = false;
@@ -457,8 +451,8 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
 
     const box =
       size === "hero"
-        ? frame === "circle"
-          ? "h-[min(58vw,320px)] w-[min(58vw,320px)] sm:h-[380px] sm:w-[380px] md:h-[420px] md:w-[420px]"
+        ? frame === "circle" || frame === "square"
+          ? "h-[min(78vw,440px)] w-[min(78vw,440px)] sm:h-[500px] sm:w-[500px] md:h-[560px] md:w-[560px]"
           : "h-[360px] w-full max-w-[420px] sm:h-[420px]"
         : size === "lg"
           ? "h-[280px] w-[220px] sm:h-[320px] sm:w-[250px]"
@@ -467,7 +461,9 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadAvatarHandle, Props>(
     const frameClass =
       frame === "circle"
         ? "rounded-full border-[5px] border-white shadow-[0_12px_40px_rgba(0,0,0,0.35)] bg-[#e8e8e8]"
-        : "rounded-2xl bg-gradient-to-b from-sky-950/80 via-sapphire-card to-sapphire-bg";
+        : frame === "square"
+          ? "rounded-2xl border-[5px] border-white shadow-[0_12px_40px_rgba(0,0,0,0.35)] bg-[#e8e8e8]"
+          : "rounded-2xl bg-gradient-to-b from-sky-950/80 via-sapphire-card to-sapphire-bg";
 
     return (
       <div

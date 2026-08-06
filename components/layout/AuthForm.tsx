@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 function UserIcon() {
   return (
@@ -34,10 +35,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     setLoading("form");
     const form = new FormData(e.currentTarget);
     const payload: Record<string, string> = {
-      email: String(form.get("email") || ""),
+      email: String(form.get("email") || "").trim(),
       password: String(form.get("password") || ""),
     };
-    if (mode === "signup") payload.name = String(form.get("name") || "");
+    if (mode === "signup") payload.name = String(form.get("name") || "").trim();
 
     try {
       const res = await fetch(`/api/auth/${mode}`, {
@@ -45,35 +46,8 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => null);
-      // #region agent log
-      fetch("http://127.0.0.1:7873/ingest/ccf26217-348c-4a08-bd0f-2912974b0d2f", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "3891af",
-        },
-        body: JSON.stringify({
-          sessionId: "3891af",
-          runId: "invalid-login",
-          hypothesisId: "F-H",
-          location: "AuthForm.tsx:submit",
-          message: "Auth attempt result",
-          data: {
-            mode,
-            status: res.status,
-            ok: res.ok,
-            errorCode: data?.error?.code ?? null,
-            errorMessage: data?.error?.message ?? null,
-            emailLen: payload.email.length,
-            passwordLen: payload.password.length,
-            emailHasUpper: /[A-Z]/.test(payload.email),
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       if (!res.ok) {
+        const data = await res.json().catch(() => null);
         throw new Error(data?.error?.message || t("common.error"));
       }
       router.push("/dashboard");
@@ -104,6 +78,14 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <div className="auth-glass-card w-full max-w-sm animate-fade-in">
+      <div className="mb-5 flex justify-center">
+        <BrandLogo
+          variant="mark"
+          tone="white"
+          className="flex-col items-center justify-center gap-2"
+          imgClassName="mx-auto h-16 w-16 object-contain object-center sm:h-[4.5rem] sm:w-[4.5rem]"
+        />
+      </div>
       <h1 className="text-center text-2xl font-bold text-white">{title}</h1>
 
       <form onSubmit={submit} className="mt-8 space-y-4">

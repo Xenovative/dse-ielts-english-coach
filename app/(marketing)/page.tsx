@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LandingBackground } from "@/components/marketing/LandingBackground";
 import { LanguageSwitcher } from "@/components/language-switcher/LanguageSwitcher";
 
@@ -22,12 +23,13 @@ export default function MarketingPage() {
 
       {/* Navigation */}
       <header className="relative z-20 flex items-center justify-between px-6 py-8 md:px-12">
-        <Link
+        <BrandLogo
           href="/"
-          className="text-sm font-bold tracking-[0.25em] text-white"
-        >
-          {t("marketing.logo")}
-        </Link>
+          variant="mark"
+          tone="white"
+          priority
+          imgClassName="h-11 w-11 object-contain sm:h-12 sm:w-12"
+        />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-10 md:flex">

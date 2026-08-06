@@ -2,7 +2,9 @@
 Generate spoken listening audio from paper transcripts (edge-tts).
 Replaces sine/echo placeholders with exam-style dialogue speech.
 
-Usage: .venv-tts/bin/python seed/generate-listening-audio.py
+Usage (cross-platform):
+  npm run db:generate-audio
+  # or: node scripts/run-venv-python.mjs seed/generate-listening-audio.py
 """
 from __future__ import annotations
 

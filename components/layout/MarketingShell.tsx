@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LanguageSwitcher } from "@/components/language-switcher/LanguageSwitcher";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
@@ -15,12 +16,13 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
       {/* Top nav */}
       <header className="sticky top-0 z-40 border-b border-sapphire-border bg-sapphire-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-xs font-bold text-white shadow-glow">
-              EC
-            </div>
-            <span className="hidden font-bold text-white sm:block">{t("app.name")}</span>
-          </Link>
+          <BrandLogo
+            href="/"
+            variant="mark"
+            tone="white"
+            priority
+            imgClassName="h-10 w-10 object-contain sm:h-11 sm:w-11"
+          />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />

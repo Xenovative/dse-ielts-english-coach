@@ -295,64 +295,52 @@ export function PracticeRunner({ paperId }: { paperId: string }) {
         />
       )}
 
-      {/* Speaking recorder + transcript editor (hidden while avatar modal is open) */}
-      {practice.skill === "speaking" && !result && !avatarModalOpen && (
-        <>
-          <MicRecorder
-            transcript={responseText}
-            onTranscriptChange={(transcript, url) => {
-              setResponseText(transcript);
-              setAudioUrl(url);
-              setInterimText("");
-            }}
-            onInterimChange={setInterimText}
-            onRecordingChange={setIsListening}
-          />
-          <div className="card space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-white">{t("speaking.transcript")}</p>
-              <p className="text-xs text-sapphire-muted">
-                {isListening ? t("speaking.listening") : t("speaking.transcriptHint")}
-              </p>
-            </div>
-            <textarea
-              value={
-                isListening
-                  ? interimText
-                    ? `${responseText}${responseText ? " " : ""}${interimText}`
-                    : responseText
-                  : responseText
-              }
-              onChange={(e) => {
-                if (isListening) return;
-                setResponseText(e.target.value);
-              }}
-              readOnly={isListening}
-              rows={8}
-              placeholder={t("speaking.transcriptPlaceholder")}
-              className="w-full resize-y rounded-xl border border-sapphire-border bg-sapphire-bg/60 px-4 py-3 text-sapphire-text outline-none ring-brand-500/40 placeholder:text-sapphire-muted focus:ring-2"
-            />
-            {isListening && interimText && (
-              <p className="rounded-lg border border-brand-500/20 bg-brand-500/10 px-3 py-2 text-sm italic text-brand-200">
-                <span className="mr-2 not-italic font-semibold text-brand-300">
-                  {t("speaking.live")}
-                </span>
-                {interimText}
-              </p>
-            )}
-            {audioUrl && !isListening && (
-              <audio controls src={audioUrl} className="w-full" />
-            )}
-            <p className="text-xs text-sapphire-muted">{t("speaking.aiUsesTranscript")}</p>
+      {/* Speaking: voice-only transcript (no typing / copy-paste) */}
+      {practice.skill === "speaking" && !result && (
+        <div
+          className="card space-y-3"
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
+          onPaste={(e) => e.preventDefault()}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-white">{t("speaking.transcript")}</p>
+            <p className="text-xs text-sapphire-muted">{t("speaking.transcriptHint")}</p>
           </div>
-        </>
-      )}
-      {practice.skill === "speaking" && !result && avatarModalOpen && (
-        <div className="card">
-          <p className="text-sm font-semibold text-white">{t("speaking.transcript")}</p>
-          <p className="mt-2 whitespace-pre-wrap text-sapphire-text-dim">
-            {responseText.trim() || t("speaking.transcriptHint")}
-          </p>
+          {!avatarModalOpen && (
+            <MicRecorder
+              transcript={responseText}
+              onTranscriptChange={(transcript, url) => {
+                setResponseText(transcript);
+                setAudioUrl(url);
+                setInterimText("");
+              }}
+              onInterimChange={setInterimText}
+              onRecordingChange={setIsListening}
+            />
+          )}
+          <div
+            role="textbox"
+            aria-readonly="true"
+            aria-label={t("speaking.transcript")}
+            className="min-h-[10rem] select-none whitespace-pre-wrap rounded-xl border border-sapphire-border bg-sapphire-bg/60 px-4 py-3 text-sapphire-text"
+          >
+            {isListening && interimText
+              ? `${responseText}${responseText ? " " : ""}${interimText}`
+              : responseText.trim() || t("speaking.transcriptPlaceholder")}
+          </div>
+          {isListening && interimText && (
+            <p className="rounded-lg border border-brand-500/20 bg-brand-500/10 px-3 py-2 text-sm italic text-brand-200">
+              <span className="mr-2 not-italic font-semibold text-brand-300">
+                {t("speaking.live")}
+              </span>
+              {interimText}
+            </p>
+          )}
+          {audioUrl && !isListening && (
+            <audio controls src={audioUrl} className="w-full" />
+          )}
+          <p className="text-xs text-sapphire-muted">{t("speaking.aiUsesTranscript")}</p>
         </div>
       )}
 

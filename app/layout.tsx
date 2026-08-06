@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { CollaborationCredit } from "@/components/brand/CollaborationCredit";
 import { I18nProvider } from "@/lib/i18n/provider";
 import {
   HTML_LANG,
@@ -11,9 +12,9 @@ import {
 import type { Theme } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "DSE + IELTS English Coach",
+  title: "LEARN — DSE + IELTS English Coach",
   description:
-    "Mobile-first, multilingual exam-prep for HKDSE English and IELTS (Academic & General) with AI feedback.",
+    "LEARN: mobile-first, multilingual exam-prep for HKDSE English and IELTS (Academic & General) with AI feedback.",
 };
 
 export const viewport: Viewport = {
@@ -50,6 +51,7 @@ export default async function RootLayout({
       <body>
         <I18nProvider initialLocale={locale} initialTheme={theme}>
           {children}
+          <CollaborationCredit />
         </I18nProvider>
       </body>
     </html>

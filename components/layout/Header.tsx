@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LanguageSwitcher } from "@/components/language-switcher/LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -33,10 +34,12 @@ export function Header({ authed }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4">
-        <Link href={authed ? "/dashboard" : "/"} className="flex items-center gap-2 font-bold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-white">🎓</span>
-          <span className="hidden text-sm sm:block">{t("app.name")}</span>
-        </Link>
+        <BrandLogo
+          href={authed ? "/dashboard" : "/"}
+          variant="mark"
+          tone="auto"
+          imgClassName="h-9 w-9 object-contain sm:h-10 sm:w-10"
+        />
 
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => {

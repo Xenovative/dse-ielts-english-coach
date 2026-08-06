@@ -43,3 +43,7 @@ public/tts
 # Large WAV duplicates (MP3 is used in production)
 public/audio/*.wav
 
+
+# Local STT smoke-test audio
+tmp-stt-test.wav
+

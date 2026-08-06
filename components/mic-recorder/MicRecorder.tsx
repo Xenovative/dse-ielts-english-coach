@@ -86,6 +86,8 @@ export const MicRecorder = forwardRef<
     autoStopMs?: number;
     compact?: boolean;
     hideControls?: boolean;
+    /** Hide busy/error status lines (parent owns the UI). */
+    hideStatus?: boolean;
   }
 >(function MicRecorder(
   {
@@ -99,6 +101,7 @@ export const MicRecorder = forwardRef<
     autoStopMs,
     compact = false,
     hideControls = false,
+    hideStatus = false,
   },
   ref,
 ) {
@@ -119,6 +122,8 @@ export const MicRecorder = forwardRef<
   const mimeRef = useRef("audio/webm");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const autoStopTimerRef = useRef<number | null>(null);
+  /** Browser live preview — used only if server STT fails. */
+  const browserPreviewRef = useRef("");
 
   const onTranscriptChangeRef = useRef(onTranscriptChange);
   const onInterimChangeRef = useRef(onInterimChange);
@@ -183,7 +188,7 @@ export const MicRecorder = forwardRef<
     const data = await res.json();
     if (!res.ok) {
       if (data?.error?.code === "no_speech") return "";
-      throw new Error(data?.error?.message || t("common.error"));
+      throw new Error(data?.error?.message || t("speaking.sttUnavailable"));
     }
     return String(data.transcript ?? "")
       .replace(/\s+/g, " ")
@@ -207,13 +212,18 @@ export const MicRecorder = forwardRef<
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
+      let finals = "";
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
-        // Live preview only — never commit browser finals (they fight Whisper).
-        interim += result[0]?.transcript ?? "";
+        const piece = result[0]?.transcript ?? "";
+        if (result.isFinal) finals += piece;
+        else interim += piece;
       }
-      if (interim.trim()) onInterimChangeRef.current?.(interim.trim());
+      const preview = `${finals}${interim}`.replace(/\s+/g, " ").trim();
+      browserPreviewRef.current = preview;
+      // Live preview only — server STT owns the committed transcript when healthy.
+      if (preview) onInterimChangeRef.current?.(preview);
     };
 
     recognition.onerror = (event) => {
@@ -248,8 +258,9 @@ export const MicRecorder = forwardRef<
 
     setError(null);
     onInterimChangeRef.current?.("");
+    browserPreviewRef.current = "";
     chunksRef.current = [];
-    // Freeze prior turns — this recording will append ONE clean Whisper result.
+    // Freeze prior turns — this recording will append ONE clean STT result.
     baseTranscriptRef.current = transcript.trim();
 
     try {
@@ -366,18 +377,29 @@ export const MicRecorder = forwardRef<
       setBusyState(true);
       try {
         turnText = await transcribeFull(blob);
-        if (!turnText) setError(t("speaking.sttEmpty"));
-      } catch (err) {
-        setError((err as Error).message || t("speaking.sttUnavailable"));
+        if (!turnText) {
+          // Prefer browser preview over an empty/no-speech result when available.
+          turnText = browserPreviewRef.current.trim();
+          setError(turnText ? null : t("speaking.sttEmpty"));
+        } else {
+          setError(null);
+        }
+      } catch {
+        // Soft-fail: keep speaking flow moving; use browser preview if we have it.
+        turnText = browserPreviewRef.current.trim();
+        setError(turnText ? null : t("speaking.sttUnavailable"));
       } finally {
         setBusyState(false);
       }
+    } else {
+      turnText = browserPreviewRef.current.trim();
     }
 
     const merged = joinTurns(baseTranscriptRef.current, turnText);
     onTranscriptChangeRef.current(merged, audioUrlRef.current);
 
     stoppingRef.current = false;
+    // Always notify parent once so speaking flow can advance to follow-ups.
     onStoppedRef.current?.();
   }
 
@@ -408,14 +430,15 @@ export const MicRecorder = forwardRef<
   }));
 
   if (hideControls) {
+    // Parent may own the "Transcribing…" label; still surface STT errors once.
     return (
       <>
-        {busy && (
+        {!hideStatus && busy && (
           <p className="text-center text-sm text-sapphire-muted">
             {t("speaking.transcribing")}
           </p>
         )}
-        {error && <p className="text-sm text-rose-200">{error}</p>}
+        {error && <p className="text-center text-sm text-rose-200">{error}</p>}
       </>
     );
   }

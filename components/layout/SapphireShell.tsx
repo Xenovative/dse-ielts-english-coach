@@ -55,7 +55,7 @@ export function SapphireShell({ children }: { children: React.ReactNode }) {
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         <SapphireHeader onMenuClick={() => setSidebarOpen(true)} showMenu />
-        <main className="sapphire-scrollbar flex-1 overflow-y-auto p-4 pb-24 lg:p-6 lg:pb-8">
+        <main className="sapphire-scrollbar flex-1 overflow-y-auto p-4 pb-28 lg:p-6 lg:pb-16">
           {children}
         </main>
       </div>

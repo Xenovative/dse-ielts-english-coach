@@ -1,0 +1,4 @@
+# Optional local Whisper STT server (Windows + Linux)
+# Install on top of the TTS venv: pip install -r requirements-stt.txt
+flask>=3.0.0
+faster-whisper>=1.1.0

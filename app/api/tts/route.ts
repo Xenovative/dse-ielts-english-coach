@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getSession } from "@/lib/auth/session";
+import { resolveVenvPython } from "@/lib/python/venv";
 import { ok, unauthorized, fail, handleUnknownError } from "@/lib/utils/api";
 import { checkRateLimit, clientKey } from "@/lib/utils/rate-limit";
 
@@ -43,11 +44,21 @@ export async function POST(req: Request) {
       /* generate */
     }
 
-    const python = path.join(process.cwd(), ".venv-tts", "bin", "python");
+    const python = resolveVenvPython();
     await runEdgeTts(python, text, filePath);
 
     return ok({ url, cached: false });
   } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "TTS generation failed";
+    // Surface setup problems (missing Windows/Linux venv) instead of a generic 500.
+    if (/venv|python|edge-tts|ENOENT/i.test(message)) {
+      return fail(
+        "tts_unavailable",
+        `${message}. Run: npm run setup:venv`,
+        503,
+      );
+    }
     return handleUnknownError(err);
   }
 }
@@ -66,17 +77,25 @@ async def main():
 
 asyncio.run(main())
 `;
+    // Do not use shell:true — paths with spaces (common on Windows) stay intact.
     const child = spawn(python, ["-c", script, text, outPath], {
       cwd: process.cwd(),
+      windowsHide: true,
     });
     let err = "";
     child.stderr.on("data", (d) => {
       err += String(d);
     });
-    child.on("error", reject);
+    child.on("error", (spawnErr) => {
+      reject(
+        new Error(
+          `Failed to start Python TTS (${python}): ${spawnErr.message}. Run: npm run setup:venv`,
+        ),
+      );
+    });
     child.on("close", (code) => {
       if (code === 0) resolve();
-      else reject(new Error(err || `edge-tts exited ${code}`));
+      else reject(new Error(err.trim() || `edge-tts exited ${code}`));
     });
   });
 }

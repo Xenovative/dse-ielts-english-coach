@@ -12,15 +12,16 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { email, password, name } = signupSchema.parse(body);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       return fail("email_taken", "An account with this email already exists", 409);
     }
 
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         name: name ?? null,
         passwordHash: await hashPassword(password),
         languagePreference: { create: {} },

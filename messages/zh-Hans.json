@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "DSE + IELTS 英语教练",
+    "name": "English Coach",
     "tagline": "通过即时 AI 反馈，掌握阅读、写作、听力与口语。"
   },
   "nav": {
@@ -66,9 +66,12 @@
     "explanation": "解析",
     "minutes": "分钟"
   },
+  "footer": {
+    "builtWith": "合作共建"
+  },
   "marketing": {
-    "logo": "ENGLISH COACH",
-    "landingTitle": "DSE + IELTS 英语教练",
+    "logo": "LEARN",
+    "landingTitle": "LEARN — DSE + IELTS 英语教练",
     "navHome": "首页",
     "navGallery": "功能",
     "navFaq": "常见问题",
@@ -188,10 +191,10 @@
     "speakingCoach": "口语教练",
     "speakingNow": "正在说话（口型同步）…",
     "askingQuestion": "正在提问…",
-    "listeningIntro": "AI 教练会朗读听力内容。播放时请留意口型同步。",
-    "audioFallbackIntro": "无法使用 3D 教练播放。请改用下方音频播放器，然后作答。",
+    "listeningIntro": "请播放下方听力音频，然后作答。",
+    "audioFallbackIntro": "请使用下方音频播放器，然后作答。",
     "audioFallbackLabel": "音频播放器",
-    "audioBackupHint": "若 3D 教练没有声音，也可以在这里播放试卷音频。",
+    "audioBackupHint": "请在这里播放听力音频，然后作答。",
     "questionLabel": "口语题目",
     "hearQuestion": "听题目",
     "stopSpeaking": "停止",
@@ -220,7 +223,8 @@
       "prepThink": "请构思题目 — 计时结束后会自动开始说话。",
       "prepTimerLabel": "准备时间",
       "speakTimerLabel": "说话时间",
-      "startSpeakingNow": "立即开始说话",
+      "startSpeakingNow": "回答问题",
+      "answerTheQuestion": "回答问题",
       "listenCarefully": "请仔细听…",
       "yourTurn": "轮到你了 — 最多说 2 分钟",
       "recordingLeft": "说话中… 剩余 {{secs}} 秒",
@@ -234,11 +238,11 @@
       "heardYou": "我听到了你说的内容。请继续用清晰的例子展开观点。",
       "noSpeech": "这次没有听清你的语音。如需要可以再试一次。",
       "submitHint": "准备好后，关闭此窗口并提交答案以获取 AI 反馈。",
-      "reset": "重置",
+      "reset": "重新开始",
       "followUpLabel": "追问 {{n}} / {{total}}",
-      "followUpN": "追问问题 {{n}}：",
-      "followUpYourTurn": "轮到你了 — 追问 {{n}} / {{total}}",
-      "answerFollowUp": "回答这个追问",
+      "followUpN": "追问问题 {{n}} / {{total}}：",
+      "followUpYourTurn": "轮到你了 — 请回答追问 {{n}} / {{total}}",
+      "answerFollowUp": "回答问题",
       "submitOnPage": "口语环节已完成。请在下方检查转写，然后点击「提交」获取 AI 评分与改进建议。"
     }
   },
@@ -252,15 +256,15 @@
     "sttConnecting": "正在启动语音识别…",
     "transcribing": "正在转写语音…",
     "transcript": "你说的内容",
-    "transcriptHint": "提交前可编辑",
-    "transcriptPlaceholder": "说话时文字会实时出现在这里。提交前也可自行输入或修改。",
+    "transcriptHint": "仅限语音 — 请说出答案（不可打字）",
+    "transcriptPlaceholder": "你说完后，转写文字会显示在这里。",
     "live": "实时",
     "aiUsesTranscript": "AI 会根据这段文字评估你的口语表现。",
-    "sttHint": "请清楚说话。停止后，系统会用本地 AI（Whisper）完整转写一次。即时预览只供参考，评分只看最终文字。",
+    "sttHint": "请清楚说话。停止后，系统会用本地 AI（Whisper）完整转写一次。",
     "sttFallbackHint": "正在使用免费本地转写。说话后文字会稍后出现。",
-    "sttUnavailable": "语音识别失败。请再试一次，或自行输入答案。",
+    "sttUnavailable": "语音识别失败。请再说话一次。",
     "sttNetwork": "此处无法使用浏览器语音服务 — 已改用免费本地转写。",
-    "sttEmpty": "未检测到语音。请再试一次，或自行输入答案。",
+    "sttEmpty": "未检测到语音。请清楚再说一次。",
     "followUps": "追问问题",
     "prep": "准备时间",
     "speak": "口语时间",

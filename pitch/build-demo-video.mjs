@@ -23,6 +23,40 @@ function run(cmd, args) {
   execFileSync(cmd, args, { stdio: "inherit" });
 }
 
+/** Resolve a TTF usable by ffmpeg drawtext on Windows or Linux. */
+function resolveFont(preferBold = false) {
+  const candidates = process.platform === "win32"
+    ? preferBold
+      ? [
+          "C:/Windows/Fonts/arialbd.ttf",
+          "C:/Windows/Fonts/ARIALBD.TTF",
+          "C:/Windows/Fonts/segoeuib.ttf",
+          "C:/Windows/Fonts/arial.ttf",
+        ]
+      : [
+          "C:/Windows/Fonts/arial.ttf",
+          "C:/Windows/Fonts/Arial.ttf",
+          "C:/Windows/Fonts/segoeui.ttf",
+        ]
+    : preferBold
+      ? [
+          "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+          "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+          "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
+        ]
+      : [
+          "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+          "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+          "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        ];
+  for (const file of candidates) {
+    if (fs.existsSync(file)) return file.replace(/\\/g, "/");
+  }
+  throw new Error(
+    "No system TTF font found for ffmpeg drawtext. Install Arial (Windows) or DejaVu fonts (Linux).",
+  );
+}
+
 function hasPlaywrightChrome() {
   try {
     // Will throw if browser missing when we launch — probe via CLI
@@ -100,6 +134,8 @@ function copyFallback(name, dest) {
 }
 
 function makeTitleCard(file, line1, line2) {
+  const bold = resolveFont(true);
+  const regular = resolveFont(false);
   run("ffmpeg", [
     "-y",
     "-f",
@@ -108,8 +144,8 @@ function makeTitleCard(file, line1, line2) {
     `color=c=0x07070D:s=${W}x${H}:d=1`,
     "-vf",
     [
-      `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='${line1}':fontsize=48:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2-30`,
-      `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='${line2}':fontsize=28:fontcolor=0xA78BFA:x=(w-text_w)/2:y=(h-text_h)/2+40`,
+      `drawtext=fontfile='${bold}':text='${line1}':fontsize=48:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2-30`,
+      `drawtext=fontfile='${regular}':text='${line2}':fontsize=28:fontcolor=0xA78BFA:x=(w-text_w)/2:y=(h-text_h)/2+40`,
     ].join(","),
     "-frames:v",
     "1",
@@ -138,7 +174,7 @@ function clipFromImage(img, out, seconds, caption) {
       `scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}`,
       `zoompan=z='min(1.06\\,zoom+0.00035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=${W}x${H}:fps=25`,
       `drawbox=x=0:y=630:w=${W}:h=90:color=black@0.55:t=fill`,
-      `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='${cap}':fontsize=24:fontcolor=white:x=36:y=658`,
+      `drawtext=fontfile='${resolveFont(false)}':text='${cap}':fontsize=24:fontcolor=white:x=36:y=658`,
     ].join(","),
     "-frames:v",
     String(frames),

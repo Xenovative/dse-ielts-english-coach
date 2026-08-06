@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ForestBackground } from "@/components/auth/ForestBackground";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LanguageSwitcher } from "@/components/language-switcher/LanguageSwitcher";
 
 export default function AuthLayout({
@@ -13,9 +13,13 @@ export default function AuthLayout({
 
       {/* Minimal top bar */}
       <div className="relative z-10 flex items-center justify-between p-5">
-        <Link href="/" className="text-sm font-bold tracking-widest text-white/90">
-          ENGLISH COACH
-        </Link>
+        <BrandLogo
+          href="/"
+          variant="mark"
+          tone="white"
+          priority
+          imgClassName="h-10 w-10 object-contain sm:h-11 sm:w-11"
+        />
         <LanguageSwitcher light />
       </div>
 

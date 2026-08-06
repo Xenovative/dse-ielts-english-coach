@@ -33,11 +33,12 @@ listening, and speaking** with deterministic scoring and AI feedback that
 ## Quick start
 
 ```bash
-# 1. Install
+# 1. Install Node deps
 npm install
 
 # 2. Configure env (defaults work out of the box for local dev)
-cp .env.example .env
+# Windows PowerShell:  Copy-Item .env.example .env
+# macOS / Linux:       cp .env.example .env
 
 # 3. Create the database + apply schema
 npx prisma migrate dev
@@ -45,8 +46,12 @@ npx prisma migrate dev
 # 4. Seed exam content + demo users
 npm run db:seed
 
-# 5. Run
-npm run dev
+# 5. Python venv for avatar TTS / listening audio (Windows + Linux)
+npm run setup:venv
+# Optional speaking STT (Whisper): npm run setup:venv:stt
+
+# 6. Run
+npx next dev -p 3000
 # open http://localhost:3000
 ```
 
@@ -65,7 +70,11 @@ Or click **Continue as guest** on the login/signup page — no account needed.
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start the dev server |
+| `npm run dev` / `npx next dev -p 3000` | Start the dev server |
+| `npm run setup:venv` | Create `.venv-tts` + install `edge-tts` (Windows/Linux) |
+| `npm run setup:venv:stt` | Same + Flask / faster-whisper for local STT |
+| `npm run stt:server` | Start local Whisper STT on `:8787` |
+| `npm run db:generate-audio` | Regenerate listening MP3s via edge-tts |
 | `npm run build` | `prisma generate` + production build |
 | `npm start` | Start the production server |
 | `npm run typecheck` | `tsc --noEmit` |

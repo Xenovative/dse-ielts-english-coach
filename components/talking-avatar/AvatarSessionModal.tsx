@@ -86,6 +86,9 @@ export function AvatarSessionModal({
   const expectMainReplyRef = useRef(false);
   const expectFollowUpAdvanceRef = useRef(false);
   const followUpIndexRef = useRef(0);
+  /** Prevents double-advance when MicRecorder onStopped fires twice. */
+  const advancingRef = useRef(false);
+  const speakingFollowUpRef = useRef(false);
   const phaseRef = useRef<Phase>("loading");
   const finishingRef = useRef(false);
   const mainRecordingStartedRef = useRef(false);
@@ -103,16 +106,29 @@ export function AvatarSessionModal({
     index: number;
     text: string;
   } | null>(null);
+  /** Once true, never show the main 2-minute cue card again until Start over. */
+  const [mainAnswered, setMainAnswered] = useState(false);
   const transcriptRef = useRef(transcript);
   const timerRef = useRef<number | null>(null);
   const openInitRef = useRef(false);
 
   const mainPrompt = questionText.trim();
   const inFollowUp =
-    phase === "followup_listen" ||
-    phase === "followup_ready" ||
-    phase === "followup_recording" ||
-    (phase === "transcribing" && activeFollowUp !== null);
+    activeFollowUp !== null &&
+    (phase === "followup_listen" ||
+      phase === "followup_ready" ||
+      phase === "followup_recording" ||
+      phase === "transcribing" ||
+      phase === "reply");
+  const showMainCueCard =
+    !mainAnswered &&
+    !activeFollowUp &&
+    (phase === "tap_to_hear" ||
+      phase === "listen" ||
+      phase === "prep" ||
+      phase === "ready" ||
+      phase === "recording" ||
+      phase === "transcribing");
 
   const updatePhase = useCallback((next: Phase) => {
     phaseRef.current = next;
@@ -121,9 +137,16 @@ export function AvatarSessionModal({
 
   const handleAvatarError = useCallback(
     (msg: string) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7297/ingest/461a83a5-6229-4271-a7d9-4e3e2cf16e5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'884e6c'},body:JSON.stringify({sessionId:'884e6c',runId:'post-fix',hypothesisId:'A',location:'AvatarSessionModal.tsx:handleAvatarError',message:'stable onError invoked',data:{msg:String(msg).slice(0,80)},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
+      // Ignore transient avatar errors once the main answer is done — follow-ups own the UI.
+      if (
+        phaseRef.current === "reply" ||
+        phaseRef.current === "followup_listen" ||
+        phaseRef.current === "followup_ready" ||
+        phaseRef.current === "followup_recording"
+      ) {
+        if (mode === "listening") onPlaybackFailed?.(msg);
+        return;
+      }
       setError(msg);
       if (mode === "listening") onPlaybackFailed?.(msg);
     },
@@ -149,6 +172,8 @@ export function AvatarSessionModal({
     finishingRef.current = false;
     mainRecordingStartedRef.current = false;
     followUpIndexRef.current = 0;
+    advancingRef.current = false;
+    speakingFollowUpRef.current = false;
     openInitRef.current = false;
   }
 
@@ -165,6 +190,7 @@ export function AvatarSessionModal({
       setSecondsLeft(SPEAK_SECONDS);
       updateFollowUpIndex(0);
       setActiveFollowUp(null);
+      setMainAnswered(false);
       setMicBusy(false);
       openInitRef.current = false;
       return;
@@ -175,6 +201,7 @@ export function AvatarSessionModal({
       transcriptRef.current = transcript;
       updateFollowUpIndex(0);
       setActiveFollowUp(null);
+      setMainAnswered(false);
       setMicBusy(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- init once per open
@@ -220,9 +247,6 @@ export function AvatarSessionModal({
     updatePhase("prep");
     timerRef.current = window.setInterval(() => {
       setSecondsLeft((s) => {
-        // #region agent log
-        fetch('http://127.0.0.1:7297/ingest/461a83a5-6229-4271-a7d9-4e3e2cf16e5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'884e6c'},body:JSON.stringify({sessionId:'884e6c',runId:'post-fix',hypothesisId:'B',location:'AvatarSessionModal.tsx:prepTick',message:'prep countdown tick (parent re-render)',data:{secondsLeft:s,phase:phaseRef.current},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         if (s <= 1) {
           clearTimer();
           // Auto-start speaking — no click required.
@@ -287,14 +311,21 @@ export function AvatarSessionModal({
 
   const speakFollowUp = useCallback(
     async (index: number) => {
+      if (speakingFollowUpRef.current || finishingRef.current) {
+        advancingRef.current = false;
+        return;
+      }
       const q = followUps[index];
       if (!q) {
+        advancingRef.current = false;
         await finishSession();
         return;
       }
 
+      speakingFollowUpRef.current = true;
       avatarRef.current?.stop();
 
+      // Single source of truth for UI + TTS before any speech starts.
       updateFollowUpIndex(index);
       setActiveFollowUp({ index, text: q });
       updatePhase("followup_listen");
@@ -302,14 +333,22 @@ export function AvatarSessionModal({
       await waitFrames(3);
       await avatarRef.current?.unlockAudio();
 
+      const n = index + 1;
+      const total = followUps.length;
       try {
         await avatarRef.current?.speakText(
-          `${t("avatar.session.followUpN", { n: index + 1 })} ${q}`,
+          `${t("avatar.session.followUpN", { n, total })} ${q}`,
         );
+        setError(null);
         updatePhase("followup_ready");
       } catch (err) {
-        setError((err as Error).message || t("avatar.ttsFailed"));
+        // Keep follow-up card + Answer CTA even if TTS fails.
+        const msg = (err as Error).message || t("avatar.ttsFailed");
+        setError(msg.includes("Something went wrong") ? t("avatar.ttsFailed") : msg);
         updatePhase("followup_ready");
+      } finally {
+        speakingFollowUpRef.current = false;
+        advancingRef.current = false;
       }
     },
     [finishSession, followUps, t, updateFollowUpIndex, updatePhase],
@@ -318,6 +357,9 @@ export function AvatarSessionModal({
   async function afterMainSpeaking(userText: string) {
     if (replyStartedRef.current) return;
     replyStartedRef.current = true;
+    mainRecordingStartedRef.current = true;
+    setMainAnswered(true);
+    setError(null);
     updatePhase("reply");
     await avatarRef.current?.unlockAudio();
     const reply = [
@@ -328,11 +370,13 @@ export function AvatarSessionModal({
     ].join(" ");
     try {
       await avatarRef.current?.speakText(reply);
-    } catch (err) {
-      setError((err as Error).message || t("avatar.ttsFailed"));
+    } catch {
+      // Thank-you TTS is optional — never block follow-ups or bounce to the main cue.
+      setError(null);
     }
 
     if (followUps.length > 0) {
+      advancingRef.current = true;
       await speakFollowUp(0);
     } else {
       await finishSession();
@@ -360,11 +404,18 @@ export function AvatarSessionModal({
   }
 
   function startMainRecording() {
-    if (mainRecordingStartedRef.current) return;
+    // Never restart the 2-minute main turn after it has begun or finished.
+    if (mainRecordingStartedRef.current || mainAnswered || activeFollowUp) {
+      return;
+    }
     if (
       phaseRef.current === "recording" ||
       phaseRef.current === "transcribing" ||
-      phaseRef.current === "reply"
+      phaseRef.current === "reply" ||
+      phaseRef.current === "followup_listen" ||
+      phaseRef.current === "followup_ready" ||
+      phaseRef.current === "followup_recording" ||
+      phaseRef.current === "done"
     ) {
       return;
     }
@@ -379,6 +430,13 @@ export function AvatarSessionModal({
   startMainRecordingRef.current = startMainRecording;
 
   function startFollowUpRecording() {
+    if (
+      phaseRef.current !== "followup_ready" ||
+      advancingRef.current ||
+      speakingFollowUpRef.current
+    ) {
+      return;
+    }
     expectMainReplyRef.current = false;
     expectFollowUpAdvanceRef.current = true;
     void avatarRef.current?.unlockAudio();
@@ -395,10 +453,13 @@ export function AvatarSessionModal({
     }
     if (expectFollowUpAdvanceRef.current) {
       expectFollowUpAdvanceRef.current = false;
+      if (advancingRef.current || speakingFollowUpRef.current) return;
+      advancingRef.current = true;
       const next = followUpIndexRef.current + 1;
       if (next < followUps.length) {
         void speakFollowUp(next);
       } else {
+        advancingRef.current = false;
         void finishSession();
       }
     }
@@ -415,10 +476,17 @@ export function AvatarSessionModal({
     transcriptRef.current = "";
     updateFollowUpIndex(0);
     setActiveFollowUp(null);
+    setMainAnswered(false);
     setMicBusy(false);
     onTranscriptChange?.("", null);
     updatePhase(avatarReady ? "tap_to_hear" : "loading");
   }
+
+  const canHear = phase === "tap_to_hear";
+  const canStartEarly = phase === "prep";
+  const canStartFollowUp = phase === "followup_ready";
+  const isRecording = phase === "recording" || phase === "followup_recording";
+  const followUpNumber = (activeFollowUp?.index ?? followUpIndex) + 1;
 
   function statusLabel(): string {
     switch (phase) {
@@ -444,7 +512,7 @@ export function AvatarSessionModal({
         return t("avatar.session.listenCarefully");
       case "followup_ready":
         return t("avatar.session.followUpYourTurn", {
-          n: (activeFollowUp?.index ?? followUpIndex) + 1,
+          n: followUpNumber,
           total: followUps.length,
         });
       case "followup_recording":
@@ -459,7 +527,8 @@ export function AvatarSessionModal({
   }
 
   const headerTimer =
-    mode === "speaking" && (phase === "prep" || phase === "recording")
+    mode === "speaking" &&
+    (phase === "prep" || phase === "recording" || phase === "followup_recording")
       ? {
           label:
             phase === "prep"
@@ -470,10 +539,16 @@ export function AvatarSessionModal({
         }
       : null;
 
-  const canHear = phase === "tap_to_hear";
-  const canStartEarly = phase === "prep";
-  const canStartFollowUp = phase === "followup_ready";
-  const isRecording = phase === "recording" || phase === "followup_recording";
+  const showStartOver =
+    mode === "speaking" &&
+    !micBusy &&
+    !isRecording &&
+    phase !== "prep" &&
+    phase !== "listen" &&
+    phase !== "followup_listen" &&
+    phase !== "reply" &&
+    phase !== "transcribing" &&
+    phase !== "loading";
 
   if (!open) return null;
 
@@ -494,7 +569,7 @@ export function AvatarSessionModal({
         }
       }}
     >
-      <div className="relative flex max-h-[min(96dvh,920px)] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-sapphire-border bg-gradient-to-b from-sapphire-card via-sapphire-surface to-sapphire-bg shadow-2xl shadow-inner-glow sm:max-w-xl md:max-w-2xl">
+      <div className="relative flex max-h-[min(98dvh,1080px)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-sapphire-border bg-gradient-to-b from-sapphire-card via-sapphire-surface to-sapphire-bg shadow-2xl shadow-inner-glow sm:max-w-3xl md:max-w-4xl">
         <div className="flex shrink-0 flex-col border-b border-sapphire-border">
           <div className="flex items-center justify-between px-4 pb-2 pt-4 sm:px-6">
             <button
@@ -535,7 +610,7 @@ export function AvatarSessionModal({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center px-5 pb-6 pt-6 sm:px-8">
+          <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-5 pb-6 pt-6 sm:px-8 md:px-10">
             <div className="flex w-full flex-col items-center justify-center">
               <div className="mx-auto flex items-center justify-center">
                 <TalkingHeadAvatar
@@ -553,7 +628,7 @@ export function AvatarSessionModal({
               </p>
             </div>
 
-            {!inFollowUp && (
+            {showMainCueCard && (
               <div className="mt-5 w-full rounded-2xl border border-sapphire-border bg-sapphire-card/80 px-4 py-4 text-left shadow-inner-glow">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300">
                   {mode === "speaking"
@@ -566,6 +641,12 @@ export function AvatarSessionModal({
               </div>
             )}
 
+            {phase === "reply" && !activeFollowUp && (
+              <div className="mt-5 w-full rounded-2xl border border-sapphire-border bg-sapphire-card/60 px-4 py-3 text-center text-sm text-sapphire-text-dim">
+                {t("avatar.session.coachReplying")}
+              </div>
+            )}
+
             {inFollowUp && activeFollowUp && (
               <div
                 key={`fu-${activeFollowUp.index}`}
@@ -573,7 +654,7 @@ export function AvatarSessionModal({
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300">
                   {t("avatar.session.followUpLabel", {
-                    n: activeFollowUp.index + 1,
+                    n: followUpNumber,
                     total: followUps.length,
                   })}
                 </p>
@@ -608,7 +689,7 @@ export function AvatarSessionModal({
                       onClick={startMainRecording}
                       className="btn-primary w-full max-w-sm rounded-full"
                     >
-                      {t("avatar.session.startSpeakingNow")}
+                      {t("avatar.session.answerTheQuestion")}
                     </button>
                   )}
                   {canStartFollowUp && !micBusy && (
@@ -617,7 +698,7 @@ export function AvatarSessionModal({
                       onClick={startFollowUpRecording}
                       className="btn-primary w-full max-w-sm rounded-full"
                     >
-                      {t("avatar.session.answerFollowUp")}
+                      {t("avatar.session.answerTheQuestion")}
                     </button>
                   )}
                   {isRecording && (
@@ -630,14 +711,10 @@ export function AvatarSessionModal({
                       {t("speaking.stop")}
                     </button>
                   )}
-                  {micBusy && (
-                    <p className="text-sm text-sapphire-muted">
-                      {t("speaking.transcribing")}
-                    </p>
-                  )}
                   <MicRecorder
                     ref={micRef}
                     hideControls
+                    hideStatus
                     transcript={localTranscript}
                     onTranscriptChange={(text, url) => {
                       transcriptRef.current = text;
@@ -646,7 +723,16 @@ export function AvatarSessionModal({
                     }}
                     onBusyChange={(busy) => {
                       setMicBusy(busy);
-                      if (busy) updatePhase("transcribing");
+                      // Only flip to "transcribing" while a speak turn is ending —
+                      // never during coach reply / follow-up TTS (that re-shows the main cue).
+                      // Status text is shown once via statusLabel() for phase "transcribing".
+                      if (
+                        busy &&
+                        (phaseRef.current === "recording" ||
+                          phaseRef.current === "followup_recording")
+                      ) {
+                        updatePhase("transcribing");
+                      }
                     }}
                     onStopped={handleRecordingStopped}
                   />
@@ -668,14 +754,15 @@ export function AvatarSessionModal({
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={resetSession}
-                disabled={micBusy || isRecording || phase === "prep"}
-                className="btn-secondary w-full max-w-sm rounded-2xl text-rose-300 disabled:opacity-40"
-              >
-                {t("avatar.session.reset")}
-              </button>
+              {showStartOver && (
+                <button
+                  type="button"
+                  onClick={resetSession}
+                  className="mt-1 text-sm text-sapphire-muted underline-offset-2 transition hover:text-sapphire-text hover:underline"
+                >
+                  {t("avatar.session.reset")}
+                </button>
+              )}
             </div>
           </div>
         </div>

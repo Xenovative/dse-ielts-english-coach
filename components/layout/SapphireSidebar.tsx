@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import {
   IconDashboard,
   IconPractice,
@@ -44,14 +45,16 @@ export function SapphireSidebar({ onNavigate, onLogout }: SidebarProps) {
   return (
     <aside className="flex h-full flex-col bg-gradient-sidebar">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-sm font-bold text-white shadow-glow">
-          EC
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-white">English Coach</p>
-          <p className="truncate text-[10px] text-sapphire-muted">DSE · IELTS</p>
-        </div>
+      <div className="flex flex-col gap-1 px-4 py-5">
+        <BrandLogo
+          href="/dashboard"
+          variant="mark"
+          tone="white"
+          imgClassName="h-10 w-10 object-contain object-left"
+        />
+        <p className="truncate pl-0.5 text-[10px] text-sapphire-muted">
+          DSE · IELTS
+        </p>
       </div>
 
       <nav className="sapphire-scrollbar flex-1 space-y-6 overflow-y-auto px-3 pb-4">

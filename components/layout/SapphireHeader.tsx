@@ -42,8 +42,9 @@ export function SapphireHeader({ onMenuClick, showMenu }: SapphireHeaderProps) {
 
       {/* Breadcrumb pill */}
       <div className="hidden items-center gap-2 rounded-full border border-sapphire-border bg-sapphire-card px-4 py-1.5 text-xs text-sapphire-text-dim sm:flex">
-        <span className="text-brand-400">●</span>
-        <span>{t("header.brand")}</span>
+        <span className="font-semibold tracking-wide text-white">
+          English Coach
+        </span>
         <span className="text-sapphire-muted">/</span>
         <span className="font-medium text-sapphire-text">{t(titleKey)}</span>
       </div>
