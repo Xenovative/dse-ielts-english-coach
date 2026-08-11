@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SapphireSidebar } from "./SapphireSidebar";
 import { SapphireHeader } from "./SapphireHeader";
@@ -21,7 +21,9 @@ export function SapphireShell({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar */}
       <div className="hidden w-[240px] shrink-0 border-r border-sapphire-border lg:block xl:w-[260px]">
         <div className="fixed inset-y-0 left-0 w-[240px] xl:w-[260px]">
-          <SapphireSidebar onLogout={logout} />
+          <Suspense fallback={null}>
+            <SapphireSidebar onLogout={logout} />
+          </Suspense>
         </div>
       </div>
 
@@ -43,10 +45,12 @@ export function SapphireShell({ children }: { children: React.ReactNode }) {
               >
                 <IconClose />
               </button>
-              <SapphireSidebar
-                onNavigate={() => setSidebarOpen(false)}
-                onLogout={logout}
-              />
+              <Suspense fallback={null}>
+                <SapphireSidebar
+                  onNavigate={() => setSidebarOpen(false)}
+                  onLogout={logout}
+                />
+              </Suspense>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import {
@@ -37,9 +37,18 @@ interface SidebarProps {
 export function SapphireSidebar({ onNavigate, onLogout }: SidebarProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeExamMode = searchParams.get("mode");
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  function skillHref(skill: string) {
+    const qs = new URLSearchParams();
+    if (activeExamMode) qs.set("mode", activeExamMode);
+    qs.set("skill", skill);
+    return `/practice?${qs.toString()}`;
   }
 
   return (
@@ -109,7 +118,7 @@ export function SapphireSidebar({ onNavigate, onLogout }: SidebarProps) {
             {(["reading", "writing", "listening", "speaking"] as const).map((skill) => (
               <li key={skill}>
                 <Link
-                  href={`/practice?skill=${skill}`}
+                  href={skillHref(skill)}
                   onClick={onNavigate}
                   className="nav-pill text-xs"
                 >

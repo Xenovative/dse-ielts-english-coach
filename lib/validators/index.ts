@@ -31,6 +31,11 @@ export const practiceQuerySchema = z.object({
   paper: z.string().cuid().optional(),
 });
 
+export const practiceNextQuerySchema = z.object({
+  mode: examCodeSchema,
+  skill: skillSchema,
+});
+
 // ---- Submissions ----
 
 export const answerInputSchema = z.object({

@@ -113,3 +113,54 @@ export async function listPractices(filter: {
     questionCount: p._count.questions,
   }));
 }
+
+/**
+ * Pure helper: prefer unused paper ids; when all are completed, reset the pool.
+ * `rng` defaults to Math.random for production; inject in tests.
+ */
+export function chooseRandomUnused(
+  allIds: string[],
+  completedIds: Iterable<string>,
+  rng: () => number = Math.random,
+): string | null {
+  if (allIds.length === 0) return null;
+  const done = new Set(completedIds);
+  const unused = allIds.filter((id) => !done.has(id));
+  const pool = unused.length > 0 ? unused : allIds;
+  const index = Math.floor(rng() * pool.length);
+  return pool[Math.min(index, pool.length - 1)] ?? null;
+}
+
+/**
+ * Pick the next practice paper for a user: random among papers they have not
+ * finished for this exam+skill. When every paper is finished, reset the pool.
+ */
+export async function pickNextPracticePaper(
+  userId: string,
+  examCode: ExamCode,
+  skill: Skill,
+): Promise<string | null> {
+  const papers = await prisma.paper.findMany({
+    where: {
+      skill,
+      examMode: { code: examCode },
+    },
+    select: { id: true },
+  });
+  const allIds = papers.map((p) => p.id);
+  if (allIds.length === 0) return null;
+
+  const completedSessions = await prisma.practiceSession.findMany({
+    where: {
+      userId,
+      skill,
+      status: { in: ["submitted", "scored"] },
+      paperId: { in: allIds },
+    },
+    select: { paperId: true },
+    distinct: ["paperId"],
+  });
+  const completedIds = completedSessions.map((s) => s.paperId);
+
+  return chooseRandomUnused(allIds, completedIds);
+}
